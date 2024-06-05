@@ -65,6 +65,12 @@ jobs:
         run: >-
           docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000
           --tag=mp-frontend:latest .
+      - name: List Docker images
+        run: docker images
+      - name: Tag Docker image for ECR
+        run: >-
+          docker tag mp-frontend:latest ${{ secrets.AWS_ACCOUNT_ID
+          }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mp-frontend:latest
       - name: Push Docker image to ECR
         run: >-
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{
