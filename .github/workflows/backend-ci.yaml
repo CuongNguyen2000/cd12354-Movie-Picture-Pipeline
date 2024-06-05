@@ -58,8 +58,8 @@ jobs:
       - name: Create ECR repository if not exists
         id: create_ecr_repo
         run: >
-          aws ecr describe-repositories --repository-names mp-frontend || aws
-          ecr create-repository --repository-name mp-frontend
+          aws ecr describe-repositories --repository-names mp-backend || aws
+          ecr create-repository --repository-name mp-backend
       - name: Log in to Amazon ECR
         id: ecr-login
         run: >
@@ -78,8 +78,8 @@ jobs:
         run: docker images
       - name: Tag Docker image for ECR
         run: >-
-          docker tag mp-frontend:latest ${{ secrets.AWS_ACCOUNT_ID
-          }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mp-frontend:latest
+          docker tag mp-backend:latest ${{ secrets.AWS_ACCOUNT_ID
+          }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mp-backend:latest
       - name: Push Docker image to ECR
         run: >-
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{
@@ -90,6 +90,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: '${{ secrets.AWS_ACCESS_KEY_ID }}'
+          aws-secret-access-key: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+          aws-region: '${{ secrets.AWS_REGION }}'
       - name: Setup kubectl
         uses: azure/setup-kubectl@v1
         with:
