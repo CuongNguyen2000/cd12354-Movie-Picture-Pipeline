@@ -18,8 +18,10 @@ jobs:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
       - name: Install dependencies
+        working-directory: starter/frontend
         run: yarn install
       - name: Run linting
+        working-directory: starter/frontend
         run: yarn run lint
   test:
     runs-on: ubuntu-latest
