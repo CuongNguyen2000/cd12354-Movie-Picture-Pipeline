@@ -41,9 +41,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-
       - name: Install dependencies
-        run: npm install
-      - name: Run tests
-        run: npm run test
+        working-directory: starter/frontend
+        run: yarn install
+      - name: Run linting
+        working-directory: starter/frontend
+        run: yarn run lint
   build:
     runs-on: ubuntu-latest
     needs:
