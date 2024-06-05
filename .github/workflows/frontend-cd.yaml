@@ -20,9 +20,11 @@ jobs:
         with:
           node-version: latest
       - name: Install dependencies
-        run: npm install
+        working-directory: starter/frontend
+        run: yarn install
       - name: Run linting
-        run: npm run lint
+        working-directory: starter/frontend
+        run: yarn run lint
   test:
     runs-on: ubuntu-latest
     steps:
