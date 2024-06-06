@@ -1,5 +1,5 @@
-name: Frontend CD
-"on":
+name: Frontend Continuous Deployment
+'on':
   workflow_dispatch: null
   push:
     branches:
@@ -37,9 +37,9 @@ jobs:
       - name: Install dependencies
         working-directory: starter/frontend
         run: yarn install
-      - name: Run linting
+      - name: Run tests
         working-directory: starter/frontend
-        run: yarn run lint
+        run: yarn run test
   build:
     runs-on: ubuntu-latest
     needs:
@@ -53,35 +53,32 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-          aws-secret-access-key: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-          aws-region: "${{ secrets.AWS_REGION }}"
+          aws-access-key-id: '${{ secrets.AWS_ACCESS_KEY_ID }}'
+          aws-secret-access-key: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+          aws-region: '${{ secrets.AWS_REGION }}'
       - name: Create ECR repository if not exists
         id: create_ecr_repo
         run: >
           aws ecr describe-repositories --repository-names mp-frontend || aws
           ecr create-repository --repository-name mp-frontend
       - name: Log in to Amazon ECR
-        id: ecr-login
-        run: >
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker
-          login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID
-          }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+        uses: aws-actions/amazon-ecr-login@v1
       - name: Build Docker image
         working-directory: starter/frontend
         run: >-
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000
-          --tag=mp-frontend:latest .
+          docker build --build-arg REACT_APP_MOVIE_API_URL=http://localhost:5000
+          --tag mp-frontend:latest .
       - name: List Docker images
         run: docker images
       - name: Tag Docker image for ECR
         run: >-
-          docker tag mp-frontend:latest ${{ secrets.AWS_ACCOUNT_ID
-          }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mp-frontend:latest
+          docker tag mp-frontend:latest ${{ secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{
+          secrets.AWS_REGION }}.amazonaws.com/mp-frontend:${GITHUB_SHA::7}
       - name: Push Docker image to ECR
         run: >-
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{
-          secrets.AWS_REGION }}.amazonaws.com/mp-frontend:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID
+          }}.dkr.ecr.${{secrets.AWS_REGION
+          }}.amazonaws.com/mp-frontend:${GITHUB_SHA::7}
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -107,7 +104,8 @@ jobs:
           cd starter/frontend/k8s
 
           kustomize edit set image frontend=${{ secrets.AWS_ACCOUNT_ID
-          }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mp-frontend:latest
+          }}.dkr.ecr.${{ secrets.AWS_REGION
+          }}.amazonaws.com/mp-frontend:${GITHUB_SHA::7}
       - name: Deploy to EKS
         run: |
           cd starter/frontend/k8s
