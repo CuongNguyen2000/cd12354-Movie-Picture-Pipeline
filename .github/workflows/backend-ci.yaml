@@ -1,4 +1,4 @@
-name: Backend CI
+name: Backend Continuous Integration
 'on':
   pull_request: null
   workflow_dispatch: null
@@ -58,8 +58,8 @@ jobs:
       - name: Create ECR repository if not exists
         id: create_ecr_repo
         run: >
-          aws ecr describe-repositories --repository-names mp-backend || aws
-          ecr create-repository --repository-name mp-backend
+          aws ecr describe-repositories --repository-names mp-backend || aws ecr
+          create-repository --repository-name mp-backend
       - name: Log in to Amazon ECR
         id: ecr-login
         run: >
@@ -67,19 +67,14 @@ jobs:
           login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID
           }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
       - name: Build Docker image
-        run: >-
-          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{
-          secrets.AWS_REGION }}.amazonaws.com/mp-backend:latest .
-        - name: Build Docker image
         working-directory: starter/backend
-        run: >-
-          docker build --tag mp-backend:latest .
+        run: 'docker build --tag mp-backend:latest .'
       - name: List Docker images
         run: docker images
       - name: Tag Docker image for ECR
         run: >-
-          docker tag mp-backend:latest ${{ secrets.AWS_ACCOUNT_ID
-          }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/mp-backend:latest
+          docker tag mp-backend:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{
+          secrets.AWS_REGION }}.amazonaws.com/mp-backend:latest
       - name: Push Docker image to ECR
         run: >-
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{
@@ -89,7 +84,7 @@ jobs:
     needs: build
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
